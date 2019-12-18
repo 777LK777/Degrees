@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Degree
+namespace GeometryLib
 {
     public class Angle : IAngle
     {
@@ -12,57 +12,84 @@ namespace Degree
         
         // TODO: Написать статические методы для вычисления синусов и косинусов  
         // TODO: Обработать отрицательный угол
-        // TODO: Перегруженные операторы должны работать только с секундами        
+        // TODO: Перегруженные операторы должны работать только с секундами
 
         // Секунды
         private double _seconds;
 
-        #region Оформление
-        const char DegSimbol = '°';
-        const char MinutesSimbol = '\'';
-        const char SecSimbol = '\"';
+        #region Константы
+        //Оформление
+        const char DEG_SYMB = '°';
+        const char MIN_SYMB = '\'';
+        const char SEC_SYMB = '\"';
+
+        //Вычисления
+        const int CNT_SEC_IN_MIN = 60;
+        const int CNT_SEC_IN_DEG = 60 * 60;
+        const int CNT_SEC_IN_CIRCLE = 360 * 60 * 60;
+
+        const int CNT_MIN_IN_DEG = 60;
+
+        const int CNT_DEG_IN_CIRCLE = 360;
         #endregion
 
         #region Свойства
         // Эти свойства позволяют обрабатывать цикличность. Т.е. 365° = 5°
-        private int Degrees
-        {
-            get
-            {
-                return (int)(_seconds / 3600.0 % 360.0);
-            }
-        }
 
-        private int Minutes
+        /// <summary>
+        /// Возвращает количество целую часть угла в градусах
+        /// </summary>
+        public int Degrees
         {
             get
             {
-                return (int)(_seconds / 60.0 % 60.0);
-            }            
-        }
-        
-        private double Seconds
-        {
-            get
-            {
-                return Math.Round(_seconds % (360.0 * 60 * 60) - Minutes * 60 - Degrees * 60 * 60, 5);
-            }
-        }
-        // --- --- --- ---
-
-        
-
-        // Тригонометрия
-        private double Rad
-        {
-            get
-            {
-                return (Degrees + Minutes / 60.0 + Seconds / 3600.0) * (Math.PI / 180);
+                if (_seconds >= 0)
+                    return (int)(_seconds / CNT_SEC_IN_DEG % CNT_DEG_IN_CIRCLE);
+                else
+                    return CNT_DEG_IN_CIRCLE - (int)( Math.Abs(_seconds) / CNT_SEC_IN_DEG % CNT_DEG_IN_CIRCLE);
             }
         }
 
         /// <summary>
-        /// Синус угла
+        /// Возвращает количество минут из дробной части
+        /// </summary>
+        public int Minutes
+        {
+            get
+            {
+                return (int)(_seconds / CNT_SEC_IN_MIN % CNT_MIN_IN_DEG);
+            }            
+        }
+
+        /// <summary>
+        /// Возвращает количество секунд из дробной части, с округлением до пяти знаков после запятой
+        /// </summary>
+        public double Seconds
+        {
+            get
+            {
+                return Math.Round(_seconds % (CNT_SEC_IN_CIRCLE) - Minutes * CNT_MIN_IN_DEG - Degrees * CNT_SEC_IN_DEG, 5);
+            }
+        }
+        // --- --- --- ---
+
+
+
+        // Тригонометрия
+        /// <summary>
+        /// Возвращает размер угла в радианах
+        /// </summary>
+        public double Rad
+        {
+            get
+            {
+                // 180 - HALF A CIRCLE
+                return (Degrees + Minutes / CNT_MIN_IN_DEG + Seconds / CNT_SEC_IN_DEG) * (Math.PI / 180);
+            }
+        }
+
+        /// <summary>
+        /// Возвращает синус угла, с округлением до пяти знаков после запятой
         /// </summary>
         public double Sin
         {
@@ -74,7 +101,7 @@ namespace Degree
 
         // TODO: Косинус 90° возвращает не ноль
         /// <summary>
-        /// Косинус угла
+        /// Возвращает косинус угла, с округлением до пяти знаков после запятой
         /// </summary>
         public double Cos
         {
@@ -88,7 +115,7 @@ namespace Degree
         #region Конструкторы
         public Angle(double Degrees, double Minutes, double Seconds)
         {
-            _seconds = Seconds + Minutes * 60 + Degrees * 60 * 60;
+            _seconds = Seconds + Minutes * CNT_SEC_IN_MIN + Degrees * CNT_SEC_IN_DEG;
         }
 
         public Angle() : this(0, 0, 0) { }
@@ -122,14 +149,14 @@ namespace Degree
         #region Методы
         public override string ToString()
         {
-            string result = Degrees.ToString() + DegSimbol;
+            string result = Degrees.ToString() + DEG_SYMB;
             if(Minutes == 0)
             {
                 return result;
             }
             else
             {
-                result += Minutes.ToString() + MinutesSimbol;
+                result += Minutes.ToString() + MIN_SYMB;
             }
             if(Seconds == 0)
             {
@@ -137,7 +164,7 @@ namespace Degree
             }
             else
             {
-                result += Seconds.ToString() + SecSimbol;
+                result += Seconds.ToString() + SEC_SYMB;
                 return result;
             }
         }

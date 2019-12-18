@@ -25,9 +25,6 @@ namespace Degrees
                 new Angle(60, 0, 0),
                 new Angle(90, 0, 0),
             };
-
-            string result = string.Empty;
-
             foreach (var g in obj)
             {
                 Console.WriteLine(
