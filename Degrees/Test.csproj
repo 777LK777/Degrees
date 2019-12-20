@@ -58,7 +58,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Degree\Angle.csproj">
+    <ProjectReference Include="..\Degree\GeometryLib.csproj">
       <Project>{4145d4fc-b854-4672-82a5-b5ce4386e774}</Project>
       <Name>Angle</Name>
     </ProjectReference>

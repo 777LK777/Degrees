@@ -6,13 +6,12 @@ using System.Threading.Tasks;
 
 namespace GeometryLib
 {
-    public class Angle : IAngle
+    public class Angle : IAngle, IEquatable<Angle>
     {
         // TODO: Задокументировать!!!
+
+        // TODO: Написать статические методы для вычисления синусов и косинусов
         
-        // TODO: Написать статические методы для вычисления синусов и косинусов  
-        // TODO: Обработать отрицательный угол
-        // TODO: Перегруженные операторы должны работать только с секундами
 
         // Секунды
         private double _seconds;
@@ -43,10 +42,7 @@ namespace GeometryLib
         {
             get
             {
-                if (_seconds >= 0)
-                    return (int)(_seconds / CNT_SEC_IN_DEG % CNT_DEG_IN_CIRCLE);
-                else
-                    return CNT_DEG_IN_CIRCLE - (int)( Math.Abs(_seconds) / CNT_SEC_IN_DEG % CNT_DEG_IN_CIRCLE);
+                return (int)(_seconds / CNT_SEC_IN_DEG % CNT_DEG_IN_CIRCLE);
             }
         }
 
@@ -68,7 +64,7 @@ namespace GeometryLib
         {
             get
             {
-                return Math.Round(_seconds % (CNT_SEC_IN_CIRCLE) - Minutes * CNT_MIN_IN_DEG - Degrees * CNT_SEC_IN_DEG, 5);
+                return Math.Round(_seconds % CNT_SEC_IN_CIRCLE - Minutes * CNT_SEC_IN_MIN - Degrees * CNT_SEC_IN_DEG, 5);
             }
         }
         // --- --- --- ---
@@ -115,7 +111,11 @@ namespace GeometryLib
         #region Конструкторы
         public Angle(double Degrees, double Minutes, double Seconds)
         {
-            _seconds = Seconds + Minutes * CNT_SEC_IN_MIN + Degrees * CNT_SEC_IN_DEG;
+            double temp = Seconds + Minutes * CNT_SEC_IN_MIN + Degrees * CNT_SEC_IN_DEG;
+            if (temp >= 0) 
+                _seconds = temp % CNT_SEC_IN_CIRCLE;
+            else
+                _seconds = CNT_SEC_IN_CIRCLE - Math.Abs(temp % CNT_SEC_IN_CIRCLE);
         }
 
         public Angle() : this(0, 0, 0) { }
@@ -125,6 +125,22 @@ namespace GeometryLib
         #endregion
 
         #region Операторы
+        public static bool operator ==(Angle angle1, Angle angle2)
+        {
+            if (((object)angle1) == null || ((object)angle2) == null)
+                return Object.Equals(angle1, angle2);
+
+            return angle1.Equals(angle2);
+        }
+
+        public static bool operator !=(Angle angle1, Angle angle2)
+        {
+            if (((object)angle1) == null || ((object)angle2) == null)
+                return !Object.Equals(angle1, angle2);
+
+            return !(angle1.Equals(angle2));
+        }
+
         public static Angle operator +(Angle FirstAngle, Angle SecondAngle)
         {
             Angle resultAngle = new Angle
@@ -149,26 +165,49 @@ namespace GeometryLib
         #region Методы
         public override string ToString()
         {
-            string result = Degrees.ToString() + DEG_SYMB;
-            if(Minutes == 0)
+            StringBuilder result = new StringBuilder(Degrees.ToString() + DEG_SYMB);
+
+            if (Seconds != 0)
             {
-                return result;
+                return result.Append(Minutes.ToString() + MIN_SYMB + Seconds.ToString() + SEC_SYMB).ToString();
+            }
+            else if (Minutes != 0)
+            {
+                return result.Append(Minutes.ToString() + MIN_SYMB).ToString();
             }
             else
-            {
-                result += Minutes.ToString() + MIN_SYMB;
-            }
-            if(Seconds == 0)
-            {
-                return result;
-            }
-            else
-            {
-                result += Seconds.ToString() + SEC_SYMB;
-                return result;
-            }
+                return result.ToString();
         }
         #endregion
 
+        #region IEquatable
+        public bool Equals(Angle other)
+        {
+            if (other == null)
+                return false;
+
+            if (this._seconds == other._seconds)
+                return true;
+            else
+                return false;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+                return false;
+
+            Angle angleObj = obj as Angle;
+            if (angleObj == null)
+                return false;
+            else
+                return Equals(angleObj);
+        }
+
+        public override int GetHashCode()
+        {
+            return _seconds.GetHashCode();
+        }
+        #endregion
     }
 }
